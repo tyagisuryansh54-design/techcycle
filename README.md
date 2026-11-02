@@ -5,6 +5,8 @@
 
 TechCycle helps people keep electronics in use for longer. It tells them whether a broken device is worth repairing, connects them to repair shops, refurbishers and authorised recyclers, and tracks the e-waste they keep out of landfill.
 
+**Live demo:** <https://techcycle-e2tm.onrender.com> · **Design docs:** <https://techcycle-e2tm.onrender.com/design.html>
+
 Primary SDG: **SDG 12** (Responsible Consumption & Production), plus SDG 11 and SDG 13.
 
 ## Team
