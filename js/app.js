@@ -118,18 +118,11 @@
   }
 
   /* Pause the hero globe and the lifecycle loop while they are scrolled out of view (saves battery and
-   * keeps scrolling smooth on phones). SVG SMIL animations are paused separately via pauseAnimations(). */
+   * keeps scrolling smooth on phones). */
   function pauseOffscreen() {
     if (!('IntersectionObserver' in window)) return;
     const io = new IntersectionObserver((entries) => {
-      entries.forEach((en) => {
-        en.target.classList.toggle('anim-paused', !en.isIntersecting);
-        en.target.querySelectorAll('svg').forEach((svg) => {
-          if (!svg.pauseAnimations) return;
-          if (en.isIntersecting) svg.unpauseAnimations();
-          else svg.pauseAnimations();
-        });
-      });
+      entries.forEach((en) => en.target.classList.toggle('anim-paused', !en.isIntersecting));
     });
     ui.$$('.hero-art, .loop-art').forEach((el) => io.observe(el));
   }

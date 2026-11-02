@@ -80,6 +80,7 @@ body {
     var(--bg);
   min-height: 100vh;
   overflow-x: hidden;
+  overflow-x: clip; /* hides sideways overflow without making body a scroll container (keeps momentum scrolling) */
 }
 .bg-grid {
   position: fixed; inset: 0; z-index: -1; pointer-events: none;
@@ -116,10 +117,8 @@ button { font: inherit; color: inherit; }
   color: var(--accent-text); margin-bottom: 12px;
 }
 .grad-text {
-  background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent));
-  background-size: 200% auto;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
   -webkit-background-clip: text; background-clip: text; color: transparent;
-  animation: shine 6s linear infinite;
 }
 .ic { width: 1.15em; height: 1.15em; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; vertical-align: -0.18em; }
 
@@ -176,7 +175,12 @@ button { font: inherit; color: inherit; }
   border: 1px solid var(--line-strong); color: var(--accent);
 }
 .brand-mark .ic { width: 20px; height: 20px; }
-.powered .topbar .brand-mark { animation: powerPulse 3s ease-in-out infinite; }
+/* Glows and pulses below animate only opacity/transform of a pseudo-element, so they never repaint the page. */
+.brand-mark { position: relative; }
+.powered .topbar .brand-mark::after {
+  content: ''; position: absolute; inset: -3px; border-radius: 14px; pointer-events: none;
+  box-shadow: 0 0 14px 2px var(--glow); opacity: 0; animation: glowFade 3s ease-in-out infinite;
+}
 .brand-text { display: flex; flex-direction: column; line-height: 1.05; }
 .brand-text b { font: 700 1.1rem var(--font-head); }
 .brand-text small { font-size: 0.7rem; color: var(--muted); font-family: var(--font-mono); }
@@ -239,19 +243,26 @@ button { font: inherit; color: inherit; }
 .hero-points { list-style: none; padding: 0; margin: 22px 0 0; display: grid; gap: 8px; color: var(--muted); }
 .hero-points li { display: flex; gap: 10px; align-items: center; }
 .hero-points .ic { color: var(--accent); }
-.live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 0 var(--glow); animation: livePulse 2s infinite; }
+.live-dot { position: relative; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.live-dot::after, .tl-step.current .tl-dot::before, .me-marker span::after {
+  content: ''; position: absolute; inset: 0; border-radius: 50%; background: var(--accent); pointer-events: none;
+  animation: ring 2s ease-out infinite;
+}
 
 .hero-art { display: grid; place-items: center; }
 .globe-stage { --stage: min(440px, 82vw); position: relative; width: var(--stage); height: var(--stage); }
 .halo { position: absolute; inset: 14%; border-radius: 50%; background: radial-gradient(circle, var(--glow), transparent 68%); filter: blur(18px); animation: breathe 5s ease-in-out infinite; }
 .globe {
-  position: absolute; inset: 15%; width: 70%; height: 70%;
+  position: absolute; inset: 15%; border-radius: 50%; overflow: hidden; isolation: isolate;
+  background: radial-gradient(circle at 38% 34%, #2bb5a5 0%, #0f5d5c 55%, #062a2b 100%);
   filter: grayscale(1) brightness(0.55); transition: filter 1.6s ease, transform 1.6s var(--ease);
   transform: scale(0.94);
 }
 .powered .globe { filter: none; transform: scale(1); }
+/* Two identical land tiles side by side; sliding by half the strip loops seamlessly (GPU transform). */
+.globe-land { position: absolute; top: 0; left: 0; width: 200%; max-width: none; height: 100%; display: block; animation: drift 28s linear infinite; }
 .globe-land path { fill: #43d68c; opacity: 0.92; }
-.globe-land { animation: drift 28s linear infinite; }
+.globe-overlay { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .globe-grid path, .globe-grid ellipse { fill: none; stroke: rgba(255, 255, 255, 0.16); stroke-width: 0.6; }
 .globe-rim { fill: none; stroke: rgba(160, 255, 210, 0.5); stroke-width: 1; }
 .orbit { position: absolute; border-radius: 50%; border: 1px dashed var(--line-strong); animation: spin 42s linear infinite; }
@@ -294,11 +305,28 @@ button { font: inherit; color: inherit; }
 .pain p { color: var(--muted); font-size: 0.92rem; margin: 0; }
 
 .loop-section { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 36px; align-items: center; }
-.loop { width: min(380px, 100%); display: block; margin-inline: auto; overflow: visible; }
+.loop { position: relative; width: 100%; display: block; overflow: visible; }
 .loop-track { fill: none; stroke: var(--line-strong); stroke-width: 2; }
-.loop-flow { fill: none; stroke: url(#loopGrad); stroke-width: 3; stroke-dasharray: 14 18; stroke-linecap: round; animation: dashFlow 2.4s linear infinite; opacity: 0.85; }
-.loop-dot { fill: var(--warn); filter: drop-shadow(0 0 8px var(--accent)); }
-.loop-node circle { fill: var(--panel-solid); stroke: var(--line-strong); stroke-width: 2; animation: nodePulse 8s infinite; }
+.loop-wrap { position: relative; width: min(380px, 100%); margin-inline: auto; }
+/* A glowing "comet" travelling round the ring: one rotating layer, so it stays on the GPU. */
+.loop-comet {
+  position: absolute; inset: 12.5%; border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0deg 250deg, color-mix(in srgb, var(--accent) 60%, transparent) 330deg, var(--warn) 360deg);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
+  animation: spin 8s linear infinite; will-change: transform;
+}
+.loop-node circle { fill: var(--panel-solid); stroke: var(--line-strong); stroke-width: 2; }
+/* Node highlights: HTML rings over the SVG nodes that fade in as the comet passes (opacity only = GPU). */
+.loop-hl {
+  position: absolute; width: 18.75%; aspect-ratio: 1; border-radius: 50%; pointer-events: none;
+  border: 2px solid var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent);
+  transform: translate(-50%, -50%); opacity: 0; animation: nodeGlow 8s linear infinite;
+}
+.loop-hl.h1 { left: 50%; top: 12.5%; }
+.loop-hl.h2 { left: 87.5%; top: 50%; animation-delay: 2s; }
+.loop-hl.h3 { left: 50%; top: 87.5%; animation-delay: 4s; }
+.loop-hl.h4 { left: 12.5%; top: 50%; animation-delay: 6s; }
 .loop-node text { fill: var(--text); font: 600 12px var(--font-head); text-anchor: middle; }
 .loop-node.n2 circle { animation-delay: 2s; }
 .loop-node.n3 circle { animation-delay: 4s; }
@@ -398,7 +426,7 @@ select.input { cursor: pointer; }
 .scanning { text-align: center; padding: 60px 10px; color: var(--muted); }
 .scan-device { position: relative; width: 90px; height: 120px; margin: 0 auto 16px; border-radius: 16px; border: 1px solid var(--line-strong); display: grid; place-items: center; color: var(--accent); overflow: hidden; background: var(--panel-solid); }
 .scan-device .ic { width: 48px; height: 48px; }
-.scan-line { position: absolute; left: 0; right: 0; height: 3px; background: var(--accent); box-shadow: 0 0 14px 4px var(--glow); animation: scan 0.75s ease-in-out infinite alternate; }
+.scan-line { position: absolute; left: 0; right: 0; top: 8%; height: 3px; background: var(--accent); box-shadow: 0 0 14px 4px var(--glow); animation: scan 0.75s ease-in-out infinite alternate; }
 .result { animation: viewIn 0.5s var(--ease); }
 .gauge-wrap { position: relative; width: 240px; margin: 0 auto; }
 .gauge { width: 100%; display: block; overflow: visible; }
@@ -498,7 +526,8 @@ select.input { cursor: pointer; }
 .svc-meta > span { display: inline-flex; gap: 5px; align-items: center; }
 .dev-icons { gap: 3px !important; color: var(--accent); }
 .svc-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-.me-marker span { display: block; width: 18px; height: 18px; border-radius: 50%; background: #22b8cf; border: 3px solid #fff; box-shadow: 0 0 0 0 rgba(34, 184, 207, 0.6); animation: mePulse 1.8s infinite; }
+.me-marker span { position: relative; display: block; width: 18px; height: 18px; border-radius: 50%; background: #0d9488; border: 3px solid #fff; }
+.me-marker span::after { background: #0d9488; }
 .leaflet-container { font-family: var(--font-body); }
 .leaflet-popup-content { font-size: 0.85rem; }
 
@@ -546,7 +575,8 @@ select.input { cursor: pointer; }
 .tl-dot { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--panel-solid); border: 2px solid var(--line-strong); color: var(--accent-ink); }
 .tl-dot .ic { width: 16px; height: 16px; stroke-width: 3; }
 .tl-step.done .tl-dot { background: var(--accent); border-color: var(--accent); }
-.tl-step.current .tl-dot { border-color: var(--accent); background: var(--panel-solid); box-shadow: 0 0 0 0 var(--glow); animation: livePulse 1.6s infinite; }
+.tl-step.current .tl-dot { position: relative; border-color: var(--accent); background: var(--panel-solid); }
+.tl-step.current .tl-dot::before { inset: -2px; opacity: 0.5; }
 .tl-step.current .tl-dot::after { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
 .tl-step.off { opacity: 0.4; }
 .tl-step b { font-size: 0.84rem; }
@@ -685,28 +715,27 @@ select.input { cursor: pointer; }
 /* ---------- Keyframes ---------- */
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes spinRev { to { transform: rotate(-360deg); } }
-@keyframes drift { to { transform: translateX(-160px); } }
+@keyframes drift { to { transform: translateX(-50%); } }
 @keyframes breathe { 0%, 100% { opacity: 0.6; transform: scale(0.96); } 50% { opacity: 1; transform: scale(1.04); } }
 @keyframes rise { 0% { opacity: 0; transform: translateY(0) scale(0.6); } 15% { opacity: 1; } 100% { opacity: 0; transform: translateY(-260px) scale(1.1); } }
 @keyframes shine { to { background-position: 200% center; } }
 @keyframes sheen { to { transform: translateX(120%); } }
 @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-@keyframes powerPulse { 0%, 100% { box-shadow: 0 0 0 0 var(--glow); } 50% { box-shadow: 0 0 0 6px transparent, 0 0 16px var(--glow); } }
+@keyframes glowFade { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
+@keyframes ring { 0% { transform: scale(1); opacity: 0.55; } 100% { transform: scale(2.6); opacity: 0; } }
+@keyframes nodeGlow { 0% { opacity: 0; } 2% { opacity: 1; } 14% { opacity: 1; } 26%, 100% { opacity: 0; } }
 @keyframes bootPulse { 0% { box-shadow: 0 0 0 0 rgba(62, 224, 143, 0.6); } 100% { box-shadow: 0 0 0 26px rgba(62, 224, 143, 0); } }
 @keyframes blink { 50% { opacity: 0; } }
 @keyframes viewIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 @keyframes listIn { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: none; } }
 @keyframes wordIn { from { transform: translateY(60%) rotateX(-70deg); opacity: 0; } to { transform: none; opacity: 1; } }
-@keyframes livePulse { 0% { box-shadow: 0 0 0 0 var(--glow); } 70% { box-shadow: 0 0 0 10px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
 @keyframes dashFlow { to { stroke-dashoffset: -64; } }
-@keyframes nodePulse { 0%, 14% { stroke: var(--accent); fill: color-mix(in srgb, var(--accent) 22%, var(--panel-solid)); } 26%, 100% { stroke: var(--line-strong); fill: var(--panel-solid); } }
 @keyframes nudge { to { transform: translateX(4px); } }
-@keyframes scan { from { top: 8%; } to { top: 90%; } }
+@keyframes scan { from { transform: translateY(0); } to { transform: translateY(98px); } }
 @keyframes pop { 0% { transform: scale(0.6); opacity: 0; } 70% { transform: scale(1.06); opacity: 1; } 100% { transform: scale(1); } }
 @keyframes popSpin { 0% { transform: scale(0) rotate(-120deg); } 70% { transform: scale(1.1) rotate(10deg); } 100% { transform: scale(1) rotate(0); } }
 @keyframes draw { to { stroke-dashoffset: 0; } }
 @keyframes shake { 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
-@keyframes mePulse { 0% { box-shadow: 0 0 0 0 rgba(34, 184, 207, 0.6); } 100% { box-shadow: 0 0 0 16px rgba(34, 184, 207, 0); } }
 @keyframes sway { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
 @keyframes toastIn { from { opacity: 0; transform: translateY(16px) scale(0.96); } to { opacity: 1; transform: none; } }
 @keyframes toastOut { to { opacity: 0; transform: translateX(30px); } }
@@ -775,7 +804,7 @@ select.input { cursor: pointer; }
 
 /* ---------- Performance ----------
  * Rotating layers get their own GPU layer; animations pause when their section is off-screen (app.js). */
-.orbit, .sat > span, .globe-land { will-change: transform; }
+.orbit, .sat > span, .globe-land { will-change: transform; backface-visibility: hidden; }
 .anim-paused, .anim-paused * { animation-play-state: paused !important; }
 
 /* Phones & tablets: drop the effects that repaint every frame (blur, animated glows, fixed masked grid). */
@@ -787,7 +816,7 @@ select.input { cursor: pointer; }
   .powered .topbar .brand-mark, .live-dot { animation: none; }
   .sat > span { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12); }
   .spark { display: none; }
-  .loop-dot { filter: none; }
+  .loop-node circle { animation: none; } /* fill/stroke keyframes repaint the SVG every frame */
   .gauge-val { filter: none; }
   .modal-backdrop { backdrop-filter: none; }
   .card, .stat, .module, .kpi, .mk-card, .svc-card, .pt-card { box-shadow: none; }
