@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TechCycle — E-Waste Repair &amp; Reuse Platform</title>
+  <meta name="description" content="TechCycle helps people repair, reuse, refurbish and responsibly recycle electronics. Milestone 2 working prototype by Team Reboot-Earth, Bennett University (2026CSAE102).">
+  <meta name="theme-color" content="#fbfaf5">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%2306110d'/%3E%3Cpath d='M16 7v8' stroke='%233ee08f' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M10.5 10.5a8 8 0 1 0 11 0' fill='none' stroke='%233ee08f' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="css/styles.css">
+  <script>
+    (function () {
+      var d = document.documentElement;
+      var get = function (k) { try { var v = localStorage.getItem('techcycle.v1.' + k); return v ? JSON.parse(v) : null; } catch (e) { return null; } };
+      d.dataset.theme = get('theme') || 'light'; // Light Eco is the default; dark is available from the toggle
+      d.dataset.motion = get('motion') || (matchMedia('(prefers-reduced-motion: reduce)').matches ? 'reduced' : 'full');
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- Boot animation (plays once per session, skippable) -->
+  <div id="boot" class="boot">
+    <div class="boot-inner">
+      <div class="boot-power"><i data-icon="power"></i></div>
+      <p class="boot-title">REBOOT<span>·</span>EARTH</p>
+      <pre class="boot-log" id="bootLog" aria-hidden="true"></pre>
+      <div class="boot-bar"><i></i></div>
+      <p class="boot-skip">Click or press any key to skip</p>
+    </div>
+  </div>
+
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <a class="brand" href="#/home" aria-label="TechCycle home">
+      <span class="brand-mark"><i data-icon="power"></i></span>
+      <span class="brand-text"><b>TechCycle</b><small>by Reboot-Earth</small></span>
+    </a>
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="#/home" data-nav="home">Home</a>
+      <a href="#/diagnose" data-nav="diagnose">Check device</a>
+      <a href="#/services" data-nav="services">Find services</a>
+      <a href="#/book" data-nav="book">Book &amp; track</a>
+      <a href="#/market" data-nav="market">Parts market</a>
+      <a href="#/impact" data-nav="impact">Impact</a>
+      <a href="#/partner" data-nav="partner">Partner</a>
+      <a href="design.html" class="nav-docs"><i data-icon="doc"></i> Design docs</a>
+    </nav>
+    <div class="top-actions">
+      <button type="button" class="icon-btn" id="motionBtn" aria-label="Toggle animations"></button>
+      <button type="button" class="icon-btn" id="themeBtn" aria-label="Toggle theme"></button>
+      <button type="button" class="icon-btn menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false" aria-controls="nav"><i data-icon="menu"></i></button>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ===================== HOME ===================== -->
+    <section class="view" data-route="home" id="view-home">
+      <div class="wrap hero">
+        <div class="hero-copy">
+          <span class="eyebrow"><span class="live-dot"></span> Milestone 2 · working prototype</span>
+          <h1>Repair. Reuse. Recycle.<br><span class="grad-text">Reboot Earth.</span></h1>
+          <p class="hero-rotator">Give your <span class="word" id="heroWord">phone</span> a second life.</p>
+          <p class="lead">TechCycle connects people with repair, reusable parts, refurbishment and responsible e-waste recycling, so electronics last longer and less ends up as waste.</p>
+          <div class="cta-row">
+            <a class="btn btn-primary btn-lg" href="#/diagnose"><i data-icon="wrench"></i> Check my device</a>
+            <a class="btn btn-ghost btn-lg" href="#/services"><i data-icon="pin"></i> Find services nearby</a>
+          </div>
+          <ul class="hero-points">
+            <li><i data-icon="check"></i> Repair-or-replace advice that shows its reasoning</li>
+            <li><i data-icon="check"></i> Pickup booking with live status tracking</li>
+            <li><i data-icon="check"></i> A measurable personal impact dashboard</li>
+          </ul>
+        </div>
+
+        <div class="hero-art" aria-hidden="true">
+          <div class="globe-stage">
+            <div class="halo"></div>
+            <div class="orbit orbit-outer">
+              <span class="sat" style="--a:0deg"><span><i data-icon="phone"></i></span></span>
+              <span class="sat" style="--a:72deg"><span><i data-icon="laptop"></i></span></span>
+              <span class="sat" style="--a:144deg"><span><i data-icon="earphones"></i></span></span>
+              <span class="sat" style="--a:216deg"><span><i data-icon="charger"></i></span></span>
+              <span class="sat" style="--a:288deg"><span><i data-icon="tablet"></i></span></span>
+            </div>
+            <div class="orbit orbit-inner">
+              <span class="sat sat-sm" style="--a:40deg"><span><i data-icon="cycle"></i></span></span>
+              <span class="sat sat-sm" style="--a:160deg"><span><i data-icon="leaf"></i></span></span>
+              <span class="sat sat-sm" style="--a:280deg"><span><i data-icon="wrench"></i></span></span>
+            </div>
+            <svg class="globe" viewBox="0 0 200 200">
+              <defs>
+                <radialGradient id="gOcean" cx="38%" cy="34%" r="78%">
+                  <stop offset="0" stop-color="#2bb5a5"/>
+                  <stop offset=".55" stop-color="#0f5d5c"/>
+                  <stop offset="1" stop-color="#062a2b"/>
+                </radialGradient>
+                <radialGradient id="gShade" cx="36%" cy="32%" r="78%">
+                  <stop offset=".5" stop-color="#000" stop-opacity="0"/>
+                  <stop offset="1" stop-color="#000" stop-opacity=".55"/>
+                </radialGradient>
+                <clipPath id="gClip"><circle cx="100" cy="100" r="80"/></clipPath>
+              </defs>
+              <circle cx="100" cy="100" r="80" fill="url(#gOcean)"/>
+              <g clip-path="url(#gClip)">
+                <g class="globe-land">
+                  <g>
+                    <path d="M38 52C48 40 66 42 72 54c6 10-2 20-10 26-4 12 4 24-2 38-4 12-12 22-16 14-4-12 0-26-6-36-8-12-10-32 0-44z"/>
+                    <path d="M104 48c10-6 22-2 24 8 2 8-6 12-10 16 8 8 14 24 8 40-6 16-16 22-22 12-6-12 0-26-6-36-6-10-4-32 6-40z"/>
+                    <path d="M140 46c12-8 32-2 36 12 4 12-6 22-16 24-8 2-14 10-20 4-8-8-10-30 0-40z"/>
+                    <path d="M150 120c8-6 20-2 20 8 0 8-10 12-18 8-6-4-6-12-2-16z"/>
+                  </g>
+                  <g transform="translate(160 0)">
+                    <path d="M38 52C48 40 66 42 72 54c6 10-2 20-10 26-4 12 4 24-2 38-4 12-12 22-16 14-4-12 0-26-6-36-8-12-10-32 0-44z"/>
+                    <path d="M104 48c10-6 22-2 24 8 2 8-6 12-10 16 8 8 14 24 8 40-6 16-16 22-22 12-6-12 0-26-6-36-6-10-4-32 6-40z"/>
+                    <path d="M140 46c12-8 32-2 36 12 4 12-6 22-16 24-8 2-14 10-20 4-8-8-10-30 0-40z"/>
+                    <path d="M150 120c8-6 20-2 20 8 0 8-10 12-18 8-6-4-6-12-2-16z"/>
+                  </g>
+                </g>
+                <g class="globe-grid">
+                  <path d="M20 100h160M31 60h138M31 140h138"/>
+                  <ellipse cx="100" cy="100" rx="28" ry="80"/>
+                  <ellipse cx="100" cy="100" rx="56" ry="80"/>
+                </g>
+              </g>
+              <circle cx="100" cy="100" r="80" fill="url(#gShade)"/>
+              <circle cx="100" cy="100" r="80" class="globe-rim"/>
+            </svg>
+            <span class="spark s1"></span><span class="spark s2"></span><span class="spark s3"></span><span class="spark s4"></span>
+          </div>
+        </div>
+      </div>
+
+      <section class="wrap section">
+        <div class="section-head reveal">
+          <span class="eyebrow">The problem</span>
+          <h2>Electronics are thrown away faster than they are repaired or recycled</h2>
+        </div>
+        <div class="stats">
+          <article class="stat reveal"><b data-count="62" data-suffix=" Mt">0</b><p>of e-waste generated worldwide in 2022, about 7.8 kg per person</p></article>
+          <article class="stat reveal"><b data-count="22.3" data-decimals="1" data-suffix="%">0</b><p>of that e-waste was documented as formally collected and recycled</p></article>
+          <article class="stat reveal"><b data-count="82" data-suffix=" Mt">0</b><p>projected for 2030 as generation keeps outpacing recycling</p></article>
+          <article class="stat reveal"><b data-count="1.751" data-decimals="3" data-suffix=" Mt">0</b><p>generated in India in FY 2023-24, of which about 43% was processed</p></article>
+        </div>
+        <p class="source">Sources: Global E-waste Monitor 2024 (UNITAR &amp; ITU); Government of India reply in the Rajya Sabha, 16 Dec 2024, as reported by Down To Earth. Full references are in the <a href="design.html#references">design docs</a>.</p>
+
+        <div class="pains">
+          <article class="pain reveal"><i data-icon="trash"></i><h3>Unnecessary disposal</h3><p>Phones, chargers and earphones get thrown away even when they can still be repaired.</p></article>
+          <article class="pain reveal"><i data-icon="tag"></i><h3>Repair feels expensive</h3><p>People assume replacing is cheaper because they cannot see a repair estimate up front.</p></article>
+          <article class="pain reveal"><i data-icon="cycle"></i><h3>Poor recycling</h3><p>Old devices end up in regular waste or informal channels instead of authorised recyclers.</p></article>
+          <article class="pain reveal"><i data-icon="alert"></i><h3>Pollution &amp; lost materials</h3><p>Improper disposal releases hazardous substances and wastes recoverable metals.</p></article>
+        </div>
+      </section>
+
+      <section class="wrap section loop-section">
+        <div class="loop-art reveal" aria-hidden="true">
+          <svg viewBox="0 0 320 320" class="loop">
+            <defs>
+              <linearGradient id="loopGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" style="stop-color:var(--accent)"/>
+                <stop offset="1" style="stop-color:var(--accent-2)"/>
+              </linearGradient>
+            </defs>
+            <circle class="loop-track" cx="160" cy="160" r="120"/>
+            <circle class="loop-flow" cx="160" cy="160" r="120"/>
+            <path id="loopPath" d="M160 40a120 120 0 1 1-.01 0" fill="none" stroke="none"/>
+            <circle class="loop-dot" r="7">
+              <animateMotion dur="8s" repeatCount="indefinite" rotate="auto"><mpath href="#loopPath" xlink:href="#loopPath"/></animateMotion>
+            </circle>
+            <g class="loop-node n1" transform="translate(160 40)"><circle r="30"/><text y="5">Check</text></g>
+            <g class="loop-node n2" transform="translate(280 160)"><circle r="30"/><text y="5">Repair</text></g>
+            <g class="loop-node n3" transform="translate(160 280)"><circle r="30"/><text y="5">Reuse</text></g>
+            <g class="loop-node n4" transform="translate(40 160)"><circle r="30"/><text y="5">Recycle</text></g>
+            <text x="160" y="152" class="loop-center">circular</text>
+            <text x="160" y="176" class="loop-center">electronics</text>
+          </svg>
+        </div>
+        <div class="loop-copy">
+          <div class="section-head reveal"><span class="eyebrow">How TechCycle works</span><h2>One platform for the whole device lifecycle</h2></div>
+          <ol class="steps">
+            <li class="reveal"><b>Check.</b> Describe the device and fault. The engine scores repairability from 0 to 100 and estimates cost, savings and CO₂e.</li>
+            <li class="reveal"><b>Repair.</b> Find a nearby partner on the map and book a doorstep pickup or drop-off. Every request gets a trackable ID.</li>
+            <li class="reveal"><b>Reuse.</b> Buy tested spare parts and refurbished devices, or list your own, instead of buying new.</li>
+            <li class="reveal"><b>Recycle.</b> When repair is not worth it, wipe your data, send the device to an authorised recycler and get a disposal certificate.</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="wrap section">
+        <div class="section-head reveal"><span class="eyebrow">Prototype modules</span><h2>Six working modules in this build</h2></div>
+        <div class="modules">
+          <a class="module reveal" href="#/diagnose"><span class="m-ic"><i data-icon="wrench"></i></span><h3>Repair-or-replace advisor</h3><p>Transparent 0–100 score with cost, savings and CO₂e estimates.</p><span class="m-go">Open <i data-icon="arrow"></i></span></a>
+          <a class="module reveal" href="#/services"><span class="m-ic"><i data-icon="pin"></i></span><h3>Partner locator</h3><p>Map of repair shops, refurbishers, collection points and recyclers, sorted by distance.</p><span class="m-go">Open <i data-icon="arrow"></i></span></a>
+          <a class="module reveal" href="#/book"><span class="m-ic"><i data-icon="truck"></i></span><h3>Booking &amp; tracking</h3><p>Validated pickup and drop-off booking with live status timelines.</p><span class="m-go">Open <i data-icon="arrow"></i></span></a>
+          <a class="module reveal" href="#/market"><span class="m-ic"><i data-icon="box"></i></span><h3>Parts marketplace</h3><p>Search, filter, reserve and list spare parts and refurbished devices.</p><span class="m-go">Open <i data-icon="arrow"></i></span></a>
+          <a class="module reveal" href="#/impact"><span class="m-ic"><i data-icon="chart"></i></span><h3>Impact dashboard</h3><p>E-waste diverted, CO₂e avoided and money saved, from completed requests only.</p><span class="m-go">Open <i data-icon="arrow"></i></span></a>
+          <a class="module reveal" href="#/partner"><span class="m-ic"><i data-icon="shield"></i></span><h3>Partner console</h3><p>Technicians and recyclers move each request through its workflow.</p><span class="m-go">Open <i data-icon="arrow"></i></span></a>
+        </div>
+      </section>
+
+      <section class="wrap section">
+        <div class="section-head reveal"><span class="eyebrow">Sustainability mapping</span><h2>Aligned with the UN Sustainable Development Goals</h2></div>
+        <div class="sdgs">
+          <article class="sdg sdg-12 reveal"><span class="sdg-num">12</span><div><h3>Responsible Consumption &amp; Production <span class="badge">primary</span></h3><p>Target 12.5: substantially reduce waste generation through prevention, reduction, recycling and reuse. Target 12.4: environmentally sound management of wastes.</p></div></article>
+          <article class="sdg sdg-11 reveal"><span class="sdg-num">11</span><div><h3>Sustainable Cities &amp; Communities</h3><p>Target 11.6: reduce cities' per-capita environmental impact, including municipal and other waste management.</p></div></article>
+          <article class="sdg sdg-13 reveal"><span class="sdg-num">13</span><div><h3>Climate Action</h3><p>Extending device life avoids the manufacturing emissions of a new device. Target 13.3: awareness and capacity on climate mitigation.</p></div></article>
+        </div>
+      </section>
+    </section>
+
+    <!-- ===================== MODULE 1: DIAGNOSE ===================== -->
+    <section class="view" data-route="diagnose" id="view-diagnose" hidden>
+      <div class="wrap page-head">
+        <span class="eyebrow">Module 1 · Repair-or-replace advisor</span>
+        <h2>Should you repair it?</h2>
+        <p class="lead">Answer four quick questions. The scoring engine weighs repair cost, device age and fix success rate, and shows its reasoning.</p>
+      </div>
+      <div class="wrap grid-2 dx">
+        <form id="dxForm" class="card form" novalidate>
+          <fieldset>
+            <legend><span class="step">1</span> Device</legend>
+            <div class="tiles" id="dxDevices" role="radiogroup" aria-label="Device type"></div>
+          </fieldset>
+          <fieldset>
+            <legend><span class="step">2</span> Price segment when new</legend>
+            <div class="seg" id="dxTier" role="radiogroup" aria-label="Price segment"></div>
+            <small class="hint" id="dxTierHint"></small>
+          </fieldset>
+          <fieldset>
+            <legend><span class="step">3</span> <label for="dxAge">Age of the device</label></legend>
+            <div class="range-row">
+              <input type="range" id="dxAge" min="0" max="10" step="0.5" value="2">
+              <output id="dxAgeOut" for="dxAge">2 years</output>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend><span class="step">4</span> <label for="dxIssue">What is wrong?</label></legend>
+            <select id="dxIssue" class="input"></select>
+          </fieldset>
+          <button class="btn btn-primary btn-block btn-lg" type="submit"><i data-icon="bolt"></i> Analyse my device</button>
+        </form>
+        <div class="card result-card" id="dxResult" aria-live="polite">
+          <div class="result-empty">
+            <div class="radar"><span></span><i data-icon="phone"></i></div>
+            <h3>Your result appears here</h3>
+            <p>You will get a repairability score, a cost estimate in ₹, potential savings and the CO₂e you avoid by repairing instead of buying new.</p>
+          </div>
+        </div>
+      </div>
+      <div class="wrap">
+        <div class="card">
+          <h3 class="card-title"><i data-icon="clock"></i> Recent checks</h3>
+          <ul id="dxHistory" class="history"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== MODULE 2: SERVICES ===================== -->
+    <section class="view" data-route="services" id="view-services" hidden>
+      <div class="wrap page-head">
+        <span class="eyebrow">Module 2 · Partner locator</span>
+        <h2>Find repair, refurbish &amp; recycling partners</h2>
+        <p class="lead">Filter by what you need and see who is closest. Book directly from any card.</p>
+      </div>
+      <div class="wrap">
+        <div class="notice"><i data-icon="alert"></i><p>This prototype uses <b>sample partner locations</b> around Greater Noida. They will be replaced with verified partner shops and CPCB-authorised recyclers in Milestone 3.</p></div>
+        <div class="toolbar">
+          <div class="chips" id="svcTypes" aria-label="Partner type"></div>
+          <div class="toolbar-right">
+            <label class="sr-only" for="svcDevice">Device</label>
+            <select id="svcDevice" class="input input-sm"></select>
+            <label class="switch"><input type="checkbox" id="svcPickup"><span class="switch-ui"></span> Pickup available</label>
+            <button type="button" class="btn btn-ghost btn-sm" id="svcLocate"><i data-icon="locate"></i> Use my location</button>
+          </div>
+        </div>
+        <p class="origin-line">Distances from <b id="svcOrigin"></b> · <span id="svcCount"></span></p>
+        <div class="svc-layout">
+          <div class="map-card card"><div id="svcMap" class="map" role="region" aria-label="Map of partners"></div></div>
+          <div class="svc-list" id="svcList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== MODULE 3: BOOK & TRACK ===================== -->
+    <section class="view" data-route="book" id="view-book" hidden>
+      <div class="wrap page-head">
+        <span class="eyebrow">Module 3 · Booking &amp; tracking</span>
+        <h2>Book a repair or recycling pickup</h2>
+        <p class="lead">Every request gets an ID such as <code>TC-2611-AB12</code> that you can track through each stage.</p>
+      </div>
+      <div class="wrap">
+        <div class="tabs" role="tablist" aria-label="Booking">
+          <button type="button" role="tab" id="tabNew" aria-selected="true" aria-controls="panelNew"><i data-icon="plus"></i> New request</button>
+          <button type="button" role="tab" id="tabTrack" aria-selected="false" aria-controls="panelTrack"><i data-icon="search"></i> Track a request</button>
+        </div>
+
+        <div id="panelNew" role="tabpanel" aria-labelledby="tabNew">
+          <div class="grid-2 book" id="bkGrid">
+            <form id="bkForm" class="card form" novalidate>
+              <div class="field">
+                <span class="label">I want to</span>
+                <div class="seg seg-lg" id="bkType" role="radiogroup" aria-label="Request type">
+                  <button type="button" role="radio" data-type="repair" aria-checked="true"><i data-icon="wrench"></i> Repair a device</button>
+                  <button type="button" role="radio" data-type="recycle" aria-checked="false"><i data-icon="cycle"></i> Recycle a device</button>
+                </div>
+              </div>
+              <div class="field-row">
+                <div class="field"><label for="bkDevice">Device</label><select id="bkDevice" class="input"></select></div>
+                <div class="field"><label for="bkTier">Price segment</label><select id="bkTier" class="input"></select></div>
+              </div>
+              <div class="field" id="bkIssueField"><label for="bkIssue">Problem</label><select id="bkIssue" class="input"></select></div>
+              <div class="field">
+                <span class="label">Handover</span>
+                <div class="seg" id="bkMode" role="radiogroup" aria-label="Handover">
+                  <button type="button" role="radio" data-mode="pickup" aria-checked="true"><i data-icon="truck"></i> Doorstep pickup</button>
+                  <button type="button" role="radio" data-mode="dropoff" aria-checked="false"><i data-icon="store"></i> I'll drop it off</button>
+                </div>
+              </div>
+              <div class="field"><label for="bkPartner">Partner</label><select id="bkPartner" class="input"></select></div>
+              <div id="bkAddrFields">
+                <div class="field"><label for="bkAddress">Pickup address</label><textarea id="bkAddress" class="input" rows="2" maxlength="200" autocomplete="street-address" placeholder="House / hostel, street, area"></textarea></div>
+                <div class="field field-narrow"><label for="bkPin">PIN code</label><input id="bkPin" class="input" inputmode="numeric" maxlength="6" autocomplete="postal-code" placeholder="201310"></div>
+              </div>
+              <div class="field-row">
+                <div class="field"><label for="bkDate">Preferred date</label><input id="bkDate" class="input" type="date"></div>
+                <div class="field"><label for="bkSlot">Time slot</label><select id="bkSlot" class="input"></select></div>
+              </div>
+              <div class="field-row">
+                <div class="field"><label for="bkName">Your name</label><input id="bkName" class="input" maxlength="60" autocomplete="name"></div>
+                <div class="field"><label for="bkPhone">Mobile number</label><input id="bkPhone" class="input" type="tel" inputmode="tel" maxlength="16" autocomplete="tel" placeholder="98765 43210"></div>
+              </div>
+              <fieldset id="bkWipe" class="wipe" hidden>
+                <legend><i data-icon="shield"></i> Before you hand it over: protect your data</legend>
+                <label class="check"><input type="checkbox" id="bkWipeAll"> <b>Tick all</b></label>
+                <label class="check"><input type="checkbox" class="wipe-item"> Back up photos, contacts and files</label>
+                <label class="check"><input type="checkbox" class="wipe-item"> Sign out of Google / Apple ID and turn off “Find my device”</label>
+                <label class="check"><input type="checkbox" class="wipe-item"> Remove SIM and memory cards</label>
+                <label class="check"><input type="checkbox" class="wipe-item"> Factory-reset the device</label>
+                <div class="field"><label class="check strong"><input type="checkbox" id="bkWipeConfirm"> I confirm my data is backed up and wiped</label></div>
+              </fieldset>
+              <button class="btn btn-primary btn-block btn-lg" type="submit" id="bkSubmit">Book</button>
+              <p class="fine">Prototype: your details stay in this browser only and are not sent to any server.</p>
+            </form>
+            <aside class="card side" id="bkSummary" aria-live="polite"></aside>
+          </div>
+          <div id="bkDone" hidden></div>
+        </div>
+
+        <div id="panelTrack" role="tabpanel" aria-labelledby="tabTrack" hidden>
+          <div class="grid-2 track">
+            <div>
+              <form id="trkForm" class="card form track-form" novalidate>
+                <div class="field">
+                  <label for="trkId">Request ID</label>
+                  <div class="input-group"><input id="trkId" class="input mono" placeholder="TC-2611-AB12" autocomplete="off" spellcheck="false"><button class="btn btn-primary" type="submit"><i data-icon="search"></i> Track</button></div>
+                </div>
+              </form>
+              <div class="card">
+                <h3 class="card-title"><i data-icon="clock"></i> Requests in this browser</h3>
+                <ul id="trkMine" class="req-list"></ul>
+              </div>
+            </div>
+            <div id="trkResult" aria-live="polite">
+              <div class="empty-state card"><i data-icon="search"></i><p>Enter a request ID or choose one from the list.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== MODULE 4: MARKET ===================== -->
+    <section class="view" data-route="market" id="view-market" hidden>
+      <div class="wrap page-head">
+        <span class="eyebrow">Module 4 · Parts &amp; refurbished marketplace</span>
+        <h2>Reuse before you buy new</h2>
+        <p class="lead">Tested spare parts and refurbished devices from repair partners and students.</p>
+      </div>
+      <div class="wrap">
+        <div class="toolbar">
+          <div class="search"><i data-icon="search"></i><label class="sr-only" for="mkSearch">Search listings</label><input id="mkSearch" class="input" type="search" placeholder="Search parts, devices, sellers…"></div>
+          <div class="toolbar-right">
+            <label class="sr-only" for="mkDevice">Device</label><select id="mkDevice" class="input input-sm"></select>
+            <label class="sr-only" for="mkSort">Sort</label>
+            <select id="mkSort" class="input input-sm"><option value="new">Newest</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option></select>
+            <button type="button" class="btn btn-primary btn-sm" id="mkAdd"><i data-icon="plus"></i> List an item</button>
+          </div>
+        </div>
+        <div class="toolbar"><div class="chips" id="mkCats" aria-label="Category"></div><span class="muted" id="mkCount"></span></div>
+        <div class="mk-grid" id="mkGrid"></div>
+      </div>
+    </section>
+
+    <!-- ===================== MODULE 5: IMPACT ===================== -->
+    <section class="view" data-route="impact" id="view-impact" hidden>
+      <div class="wrap page-head">
+        <span class="eyebrow">Module 5 · Impact dashboard</span>
+        <h2>Your measurable impact</h2>
+        <p class="lead">Only completed repairs and recycling count. Figures are estimates based on the published <a href="design.html#engine">assumptions</a>.</p>
+      </div>
+      <div class="wrap">
+        <div class="notice notice-info" id="impDemoNote" hidden><i data-icon="bulb"></i><p>Demo data is loaded. Demo records are marked “demo” and can be removed below.</p></div>
+        <div class="empty-state card" id="impEmpty" hidden><i data-icon="chart"></i><p>No activity yet. Run a device check, book a request, or load demo data to see the dashboard in action.</p></div>
+        <div class="kpis" id="impKpis"></div>
+        <div class="grid-3 charts">
+          <div class="card"><h3 class="card-title"><i data-icon="chart"></i> Completed actions by device</h3><div id="impBars" class="hbars"></div>
+            <ul class="legend inline"><li><span class="sw d-repair"></span>Repaired</li><li><span class="sw d-recycle"></span>Recycled</li></ul></div>
+          <div class="card"><h3 class="card-title"><i data-icon="cycle"></i> Request outcomes</h3><div id="impDonut" class="donut-wrap"></div></div>
+          <div class="card"><h3 class="card-title"><i data-icon="truck"></i> Pipeline by status</h3><ul id="impPipeline" class="pipeline"></ul></div>
+        </div>
+        <div class="grid-2">
+          <div class="card context">
+            <h3 class="card-title"><i data-icon="globe"></i> In context</h3>
+            <p>The world generated <b>62 million tonnes</b> of e-waste in 2022, and only <b>22.3%</b> was documented as formally collected and recycled (Global E-waste Monitor 2024). Every repaired device and every formally recycled one moves that number in the right direction.</p>
+            <details><summary>Assumptions used in these estimates</summary>
+              <ul>
+                <li>A completed repair is assumed to replace the purchase of one new device of the same price segment.</li>
+                <li>CO₂e avoided = the device's manufacturing footprint × 0.9 (10% is allowed for replacement parts).</li>
+                <li>Indicative footprints: smartphone 60 kg, laptop 250 kg, tablet 100 kg, earphones 6 kg, charger 2 kg CO₂e. These are order-of-magnitude values from manufacturer product environmental reports and LCA literature.</li>
+                <li>Money saved = new device price − final repair cost (or the midpoint of the estimate).</li>
+                <li>Recycling counts device weight as e-waste diverted to formal channels, but no CO₂e credit is claimed.</li>
+              </ul>
+            </details>
+          </div>
+          <div class="card">
+            <h3 class="card-title"><i data-icon="flask"></i> Demo &amp; data controls</h3>
+            <p class="muted">Load sample requests across every stage for a demonstration, or clear the data stored in this browser.</p>
+            <div class="cta-row">
+              <button type="button" class="btn btn-primary btn-sm" id="impDemo"><i data-icon="bolt"></i> Load demo data</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="impClearDemo"><i data-icon="x"></i> Remove demo data</button>
+              <button type="button" class="btn btn-danger btn-sm" id="impReset"><i data-icon="trash"></i> Clear all local data</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== MODULE 6: PARTNER ===================== -->
+    <section class="view" data-route="partner" id="view-partner" hidden>
+      <div class="wrap page-head">
+        <span class="eyebrow">Module 6 · Partner console</span>
+        <h2>Technician &amp; recycler console</h2>
+        <p class="lead">Partners accept requests and update each stage. Customers see the change instantly on their tracking page.</p>
+      </div>
+      <div class="wrap">
+        <div class="notice"><i data-icon="shield"></i><p>In this prototype the console is open for demonstration. Partner login and request assignment are planned for Milestone 3.</p></div>
+        <div class="toolbar">
+          <div class="chips" id="ptGroups" aria-label="Request group"></div>
+          <div class="toolbar-right">
+            <label class="sr-only" for="ptType">Request type</label>
+            <select id="ptType" class="input input-sm"><option value="all">All types</option><option value="repair">Repair</option><option value="recycle">Recycle</option></select>
+            <button type="button" class="btn btn-ghost btn-sm" id="ptDemo"><i data-icon="bolt"></i> Load demo data</button>
+          </div>
+        </div>
+        <div class="pt-grid" id="ptList"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-grid">
+      <div>
+        <a class="brand" href="#/home"><span class="brand-mark"><i data-icon="power"></i></span><span class="brand-text"><b>TechCycle</b><small>by Reboot-Earth</small></span></a>
+        <p class="muted">E-Waste Repair &amp; Reuse Platform. Milestone 2 working prototype for 2026CSAE102 Technology and Sustainability, Bennett University.</p>
+      </div>
+      <div>
+        <h4>Team Reboot-Earth</h4>
+        <ul class="team-list">
+          <li>Suryansh Tyagi</li><li>Aditi Mehrotra</li><li>Arnav Sharma</li><li>Abdul Aziz</li><li>Shraddha Singh</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Project</h4>
+        <ul class="link-list">
+          <li><a href="design.html">Design docs &amp; diagrams</a></li>
+          <li><a href="design.html#bmc">Business Model Canvas</a></li>
+          <li><a href="design.html#testing">Live test suite</a></li>
+          <li><a href="design.html#references">References</a></li>
+        </ul>
+      </div>
+    </div>
+    <p class="wrap fine footer-note">Prototype notice: partner locations and listings are sample data. Costs and CO₂e figures are indicative estimates based on stated assumptions. Map data © OpenStreetMap contributors.</p>
+  </footer>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+  <div id="modalRoot"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="" defer></script>
+  <script src="js/data.js" defer></script>
+  <script src="js/engine.js" defer></script>
+  <script src="js/store.js" defer></script>
+  <script src="js/demo.js" defer></script>
+  <script src="js/ui.js" defer></script>
+  <script src="js/modules/diagnose.js" defer></script>
+  <script src="js/modules/services.js" defer></script>
+  <script src="js/modules/booking.js" defer></script>
+  <script src="js/modules/marketplace.js" defer></script>
+  <script src="js/modules/impact.js" defer></script>
+  <script src="js/modules/partner.js" defer></script>
+  <script src="js/app.js" defer></script>
+</body>
+</html>
