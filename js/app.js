@@ -117,6 +117,23 @@
     }, 2400);
   }
 
+  /* Pause the hero globe and the lifecycle loop while they are scrolled out of view (saves battery and
+   * keeps scrolling smooth on phones). SVG SMIL animations are paused separately via pauseAnimations(). */
+  function pauseOffscreen() {
+    if (!('IntersectionObserver' in window)) return;
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        en.target.classList.toggle('anim-paused', !en.isIntersecting);
+        en.target.querySelectorAll('svg').forEach((svg) => {
+          if (!svg.pauseAnimations) return;
+          if (en.isIntersecting) svg.unpauseAnimations();
+          else svg.pauseAnimations();
+        });
+      });
+    });
+    ui.$$('.hero-art, .loop-art').forEach((el) => io.observe(el));
+  }
+
   function start() {
     ui.hydrateIcons();
     ui.initTheme();
@@ -126,6 +143,7 @@
     window.addEventListener('hashchange', render);
     render();
     rotateWords();
+    pauseOffscreen();
     boot(() => document.body.classList.add('powered'));
     if (!TC.store.isPersistent()) ui.toast('Browser storage is blocked, so data will reset when you close this tab.', 'warn');
   }

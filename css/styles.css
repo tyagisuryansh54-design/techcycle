@@ -773,6 +773,27 @@ select.input { cursor: pointer; }
   .toolbar-right { width: 100%; }
 }
 
+/* ---------- Performance ----------
+ * Rotating layers get their own GPU layer; animations pause when their section is off-screen (app.js). */
+.orbit, .sat > span, .globe-land { will-change: transform; }
+.anim-paused, .anim-paused * { animation-play-state: paused !important; }
+
+/* Phones & tablets: drop the effects that repaint every frame (blur, animated glows, fixed masked grid). */
+@media (max-width: 980px), (hover: none) {
+  .topbar { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--bg); }
+  .bg-grid { display: none; }
+  .halo { filter: none; animation: none; opacity: 0.8; }
+  .grad-text { animation: none; }
+  .powered .topbar .brand-mark, .live-dot { animation: none; }
+  .sat > span { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12); }
+  .spark { display: none; }
+  .loop-dot { filter: none; }
+  .gauge-val { filter: none; }
+  .modal-backdrop { backdrop-filter: none; }
+  .card, .stat, .module, .kpi, .mk-card, .svc-card, .pt-card { box-shadow: none; }
+  .reveal { transform: translateY(12px); transition-duration: 0.45s; }
+}
+
 /* ---------- Reduced motion ----------
  * data-motion follows the OS "reduce motion" setting by default; the header toggle overrides it. */
 [data-motion='reduced'] *, [data-motion='reduced'] *::before, [data-motion='reduced'] *::after {
