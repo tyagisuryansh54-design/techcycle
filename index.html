@@ -9,9 +9,10 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%2306110d'/%3E%3Cpath d='M16 7v8' stroke='%233ee08f' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M10.5 10.5a8 8 0 1 0 11 0' fill='none' stroke='%233ee08f' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;600;700&display=swap">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-  <link rel="stylesheet" href="css/styles.css?v=3">
+  <!-- Fonts load without blocking the first paint; the map library loads only when the map page opens. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;600;700&display=swap" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;600;700&display=swap"></noscript>
+  <link rel="stylesheet" href="css/styles.css?v=4">
   <script>
     (function () {
       var d = document.documentElement;
@@ -484,18 +485,17 @@
   <div id="toasts" class="toasts" aria-live="polite"></div>
   <div id="modalRoot"></div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="" defer></script>
-  <script src="js/data.js?v=3" defer></script>
-  <script src="js/engine.js?v=3" defer></script>
-  <script src="js/store.js?v=3" defer></script>
-  <script src="js/demo.js?v=3" defer></script>
-  <script src="js/ui.js?v=3" defer></script>
-  <script src="js/modules/diagnose.js?v=3" defer></script>
-  <script src="js/modules/services.js?v=3" defer></script>
-  <script src="js/modules/booking.js?v=3" defer></script>
-  <script src="js/modules/marketplace.js?v=3" defer></script>
-  <script src="js/modules/impact.js?v=3" defer></script>
-  <script src="js/modules/partner.js?v=3" defer></script>
-  <script src="js/app.js?v=3" defer></script>
+  <script src="js/data.js?v=4" defer></script>
+  <script src="js/engine.js?v=4" defer></script>
+  <script src="js/store.js?v=4" defer></script>
+  <script src="js/demo.js?v=4" defer></script>
+  <script src="js/ui.js?v=4" defer></script>
+  <script src="js/modules/diagnose.js?v=4" defer></script>
+  <script src="js/modules/services.js?v=4" defer></script>
+  <script src="js/modules/booking.js?v=4" defer></script>
+  <script src="js/modules/marketplace.js?v=4" defer></script>
+  <script src="js/modules/impact.js?v=4" defer></script>
+  <script src="js/modules/partner.js?v=4" defer></script>
+  <script src="js/app.js?v=4" defer></script>
 </body>
 </html>

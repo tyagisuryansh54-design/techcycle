@@ -60,7 +60,7 @@
 }
 [data-theme='light'] .boot { background: radial-gradient(circle at 50% 40%, #ffffff, #f3f1e7 70%); }
 [data-theme='light'] .boot-title { color: #16241b; }
-[data-theme='light'] .boot-title span, [data-theme='light'] .boot-power, [data-theme='light'] .boot-log::after { color: #15803d; border-color: #15803d; }
+[data-theme='light'] .boot-title span, [data-theme='light'] .boot-power, [data-theme='light'] .boot-power::after, [data-theme='light'] .boot-log::after { color: #15803d; border-color: #15803d; }
 [data-theme='light'] .boot-log { background: #ffffff; border-color: rgba(21, 128, 61, 0.25); color: #15803d; }
 [data-theme='light'] .boot-bar { background: rgba(21, 128, 61, 0.12); }
 [data-theme='light'] .boot-bar i { background: linear-gradient(90deg, #15803d, #0f766e); }
@@ -211,9 +211,10 @@ button { font: inherit; color: inherit; }
 .boot-inner { width: min(520px, 100% - 40px); text-align: center; }
 .boot-power {
   width: 84px; height: 84px; margin: 0 auto 18px; display: grid; place-items: center; border-radius: 50%;
-  border: 2px solid #3ee08f; color: #3ee08f; box-shadow: 0 0 0 0 rgba(62, 224, 143, 0.6);
-  animation: bootPulse 1.2s ease-out infinite;
+  border: 2px solid #3ee08f; color: #3ee08f; position: relative;
 }
+/* Pulse is a scaling ring (transform + opacity) so the GPU animates it without repainting. */
+.boot-power::after { content: ''; position: absolute; inset: -2px; border-radius: 50%; border: 2px solid #3ee08f; animation: bootRing 1.2s ease-out infinite; }
 .boot-power .ic { width: 40px; height: 40px; }
 .boot-title { font: 700 1.6rem var(--font-head); letter-spacing: 0.3em; margin: 0 0 18px; color: #e7f4ed; }
 .boot-title span { color: #3ee08f; margin: 0 0.2em; }
@@ -255,10 +256,13 @@ button { font: inherit; color: inherit; }
 .globe {
   position: absolute; inset: 15%; border-radius: 50%; overflow: hidden; isolation: isolate;
   background: radial-gradient(circle at 38% 34%, #2bb5a5 0%, #0f5d5c 55%, #062a2b 100%);
-  filter: grayscale(1) brightness(0.55); transition: filter 1.6s ease, transform 1.6s var(--ease);
+  transition: transform 1.6s var(--ease);
   transform: scale(0.94);
 }
-.powered .globe { filter: none; transform: scale(1); }
+/* "Powered off" look is a dark layer that fades out (opacity), not a CSS filter that repaints the globe every frame. */
+.globe::after { content: ''; position: absolute; inset: 0; z-index: 2; border-radius: 50%; background: rgba(12, 18, 16, 0.6); pointer-events: none; transition: opacity 1.6s ease; }
+.powered .globe { transform: scale(1); }
+.powered .globe::after { opacity: 0; }
 /* Two identical land tiles side by side; sliding by half the strip loops seamlessly (GPU transform). */
 .globe-land { position: absolute; top: 0; left: 0; width: 200%; max-width: none; height: 100%; display: block; animation: drift 28s linear infinite; }
 .globe-land path { fill: #43d68c; opacity: 0.92; }
@@ -724,7 +728,7 @@ select.input { cursor: pointer; }
 @keyframes glowFade { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
 @keyframes ring { 0% { transform: scale(1); opacity: 0.55; } 100% { transform: scale(2.6); opacity: 0; } }
 @keyframes nodeGlow { 0% { opacity: 0; } 2% { opacity: 1; } 14% { opacity: 1; } 26%, 100% { opacity: 0; } }
-@keyframes bootPulse { 0% { box-shadow: 0 0 0 0 rgba(62, 224, 143, 0.6); } 100% { box-shadow: 0 0 0 26px rgba(62, 224, 143, 0); } }
+@keyframes bootRing { 0% { transform: scale(1); opacity: 0.7; } 100% { transform: scale(1.6); opacity: 0; } }
 @keyframes blink { 50% { opacity: 0; } }
 @keyframes viewIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 @keyframes listIn { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: none; } }
@@ -806,6 +810,8 @@ select.input { cursor: pointer; }
  * Rotating layers get their own GPU layer; animations pause when their section is off-screen (app.js). */
 .orbit, .sat > span, .globe-land { will-change: transform; backface-visibility: hidden; }
 .anim-paused, .anim-paused * { animation-play-state: paused !important; }
+/* While the boot screen covers the page, the hero waits so the boot animation gets the whole frame budget. */
+body:not(.powered) .hero-art * { animation-play-state: paused !important; }
 
 /* Phones & tablets: drop the effects that repaint every frame (blur, animated glows, fixed masked grid). */
 @media (max-width: 980px), (hover: none) {

@@ -33,11 +33,43 @@ TC.modules.services = (function () {
     });
   }
 
+  /* Leaflet (~150 KB) is fetched only when this page first opens, so it never slows the home page. */
+  let leafletLoading = null;
+  function loadLeaflet() {
+    if (window.L) return Promise.resolve();
+    if (leafletLoading) return leafletLoading;
+    const base = 'https://unpkg.com/leaflet@1.9.4/dist/';
+    leafletLoading = new Promise((resolve, reject) => {
+      const css = document.createElement('link');
+      css.rel = 'stylesheet';
+      css.href = base + 'leaflet.css';
+      css.crossOrigin = '';
+      document.head.appendChild(css);
+      const js = document.createElement('script');
+      js.src = base + 'leaflet.js';
+      js.crossOrigin = '';
+      js.onload = resolve;
+      js.onerror = reject;
+      document.head.appendChild(js);
+    });
+    return leafletLoading;
+  }
+
   function ensureMap() {
     if (map) return;
     const el = ui.$('#svcMap');
     if (!window.L) {
-      el.innerHTML = `<div class="map-fallback">${ui.icon('globe')}<p>The map could not load (you may be offline). Distances and the list below still work.</p></div>`;
+      el.innerHTML = `<div class="map-fallback">${ui.icon('globe')}<p>Loading map…</p></div>`;
+      loadLeaflet().then(() => {
+        if (map) return;
+        el.innerHTML = '';
+        ensureMap();
+        render();
+        setTimeout(() => map && map.invalidateSize(), 60);
+      }).catch(() => {
+        leafletLoading = null;
+        el.innerHTML = `<div class="map-fallback">${ui.icon('globe')}<p>The map could not load (you may be offline). Distances and the list below still work.</p></div>`;
+      });
       return;
     }
     map = L.map(el, { scrollWheelZoom: false, zoomControl: true }).setView([origin.lat, origin.lng], 11);
